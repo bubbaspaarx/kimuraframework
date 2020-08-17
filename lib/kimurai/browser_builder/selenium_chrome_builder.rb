@@ -29,6 +29,16 @@ module Kimurai::BrowserBuilder
           opts.merge!(binary: chrome_path)
         end
 
+        if extension = Kimurai.configuration.extension 
+          cap_options = {
+            'chromeOptions' => {
+              'extensions' => [
+                Base64.strict_encode64(File.open(extension, 'rb').read)
+              ]
+            }
+          }
+          caps = Selenium::WebDriver::Remote::Capabilities.chrome(cap_options)
+        end
         # See all options here: https://seleniumhq.github.io/selenium/docs/api/rb/Selenium/WebDriver/Chrome/Options.html
         driver_options = Selenium::WebDriver::Chrome::Options.new(opts)
 
@@ -111,7 +121,7 @@ module Kimurai::BrowserBuilder
 
         chromedriver_path = Kimurai.configuration.chromedriver_path || "/usr/local/bin/chromedriver"
         service = Selenium::WebDriver::Service.chrome(path: chromedriver_path)
-        Capybara::Selenium::Driver.new(app, browser: :chrome, options: driver_options, service: service)
+        Capybara::Selenium::Driver.new(app, browser: :chrome, options: driver_options, service: service, desired_capabilities: caps)
       end
 
       # Create browser instance (Capybara session)
